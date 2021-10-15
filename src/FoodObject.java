@@ -16,8 +16,16 @@ public class FoodObject {
     public String perform;
     public String eating;
     public String tip;
+    public String levelOfDifficult;
+    public String imageUrl;
+    
+    public FoodObject()
+    {
+        
+    }
     public FoodObject(String name, String description,
-            String ingredients, String preprocessing, String perform, String eating, String tip)
+            String ingredients, String preprocessing,
+            String perform, String eating, String tip, String levelOfDifficult, String imageUrl)
     {
         this.name = name;
         this.description = description;
@@ -26,5 +34,7 @@ public class FoodObject {
         this.perform = perform;
         this.eating = eating;
         this.tip = tip;
+        this.levelOfDifficult = levelOfDifficult;
+        this.imageUrl = imageUrl;
     }
 }
