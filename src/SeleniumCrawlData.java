@@ -1,4 +1,3 @@
-
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.InputStream;
@@ -9,8 +8,6 @@ import org.json.*;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -22,7 +19,14 @@ import org.openqa.selenium.support.ui.WebDriverWait;
  *
  * @author Admin
  */
-public class SeleniumCrawlData {
+public class SeleniumCrawlData extends Thread{
+    static int startPages;
+    static int endPages;
+    public SeleniumCrawlData(int startPages, int endPages)
+    {
+        this.startPages = startPages;
+        this.endPages = endPages;
+    }
     
     
     public static String getname(String url)
@@ -111,17 +115,17 @@ public class SeleniumCrawlData {
         return json;
     }
     public static void main(String[] args) throws Exception {
+        System.out.println("Thread: " + Thread.currentThread().getId());
         ArrayList<FoodObject> arrList = new ArrayList<FoodObject>();
         ChromeOptions op = new ChromeOptions();
         op.addArguments("--headless");
         WebDriver driver = new ChromeDriver(op);
-        int pages = 1;
         boolean hasNextPage = true;
         //int test = 1; //this varible for testing.
         do{
             try {
-                System.out.println("Go to page: " + pages + "......");
-                driver.get(String.format("https://monngonmoingay.com/tim-kiem-mon-ngon/page/%d/", pages));
+                System.out.println("Go to page: " + startPages + "......");
+                driver.get(String.format("https://monngonmoingay.com/tim-kiem-mon-ngon/page/%d/", startPages));
                 Thread.sleep(2000);
                 ((JavascriptExecutor) driver).executeScript("window.scrollTo(0, document.body.scrollHeight)");
                 Thread.sleep(4000);
@@ -165,7 +169,7 @@ public class SeleniumCrawlData {
                     Thread.sleep(2000);
                     driver.switchTo().window(tabs.get(0));
                 }
-                pages++;
+                startPages++;
                 //test++; testing
             } catch (Exception e) {
                 System.err.println("Error !!!!!!!!!!!!!!");
@@ -173,10 +177,10 @@ public class SeleniumCrawlData {
                 hasNextPage = false;
             }
         }
-        while (hasNextPage);
+        while (hasNextPage && startPages <= endPages);
         //while (hasNextPage && test <1); //this while for testing
         JSONArray Jsonarr = convertToJson(arrList);
-        try (FileWriter file = new FileWriter("output/data.json")){
+        try (FileWriter file = new FileWriter("output/"+startPages+"data.json")){
             System.out.println("Saving JSON file.......");
             file.write(Jsonarr.toString());
             System.out.println("Saving file successfull !");
