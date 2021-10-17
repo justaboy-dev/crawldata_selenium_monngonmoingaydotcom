@@ -19,13 +19,13 @@ import org.openqa.selenium.chrome.ChromeDriver;
  */
 public class mainClass {
     public static void main(String[] args) throws Exception{
-//        WebDriver driver = new ChromeDriver();
-//        driver.get("https://monngonmoingay.com/tim-kiem-mon-ngon/");
-//        WebElement e = driver.findElement(By.xpath("/html/body/div[3]/div/div[2]/div/div[3]/a[8]"));
-//        e.click();
-//        e = driver.findElement(By.cssSelector("[class='page-numbers current']"));
-//        int maxPage = Integer.getInteger(e.getAttribute("innerText"));
-        int maxPage = 99;
+        WebDriver driver = new ChromeDriver();
+        driver.get("https://monngonmoingay.com/tim-kiem-mon-ngon/");
+        WebElement e = driver.findElement(By.xpath("/html/body/div[3]/div/div[2]/div/div[3]/a[8]"));
+        e.click();
+        e = driver.findElement(By.cssSelector("[class='page-numbers current']"));
+        String num = e.getAttribute("innerText");
+        int maxPage = Integer.parseInt(num);
         int inputThread = 0;
         
         do
@@ -44,10 +44,9 @@ public class mainClass {
         {
             int temp = end;
             end += thread;
-            //
             SeleniumCrawlData runThread = new SeleniumCrawlData(temp, end);
             runThread.start();
-            //
+            Thread.sleep(3000);
             end++;
         }
     }
