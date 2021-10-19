@@ -39,7 +39,7 @@ public class mainClass {
         }
         while(inputThread <=0 || inputThread >= Math.sqrt(maxPage));
         int thread = maxPage / inputThread;
-        int end = 1;
+        int end = 92;
         for(int i = 0; i < inputThread; i++)
         {
             int temp = end;

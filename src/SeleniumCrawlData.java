@@ -86,11 +86,11 @@ public class SeleniumCrawlData extends Thread {
 
     public static JSONArray convertToJson(ArrayList<FoodObject> arr) throws Exception {
         JSONArray json = new JSONArray();
-
+        int id = 1826;
         for (int i = 0; i < arr.size(); i++) {
             JSONObject obj = new JSONObject();
             JSONObject objitem = new JSONObject();
-            objitem.put("id", String.valueOf(i));
+            objitem.put("id", String.valueOf(id));
             objitem.put("name", arr.get(i).name);
             objitem.put("description", arr.get(i).description);
             objitem.put("ingredients", arr.get(i).ingredients);
@@ -102,6 +102,7 @@ public class SeleniumCrawlData extends Thread {
             objitem.put("imageUrl", arr.get(i).imageUrl);
             obj.put("Food", objitem);
             json.put(obj);
+            id++;
         }
 
         return json;
