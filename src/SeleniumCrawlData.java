@@ -5,6 +5,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
 import org.json.*;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -76,9 +79,9 @@ public class SeleniumCrawlData extends Thread {
 
         for (WebElement contentitem : content) {
             if (checkExitElement(contentitem, "span") != null) {
-                returnStr += contentitem.findElement(By.tagName("span")).getAttribute("innerText") + ";";
+                returnStr += contentitem.findElement(By.tagName("span")).getText() + ";";
             } else {
-                returnStr += contentitem.getAttribute("innerText") + ";";
+                returnStr += contentitem.getText() + ";";
             }
         }
         return returnStr;
@@ -86,12 +89,13 @@ public class SeleniumCrawlData extends Thread {
 
     public static JSONArray convertToJson(ArrayList<FoodObject> arr) throws Exception {
         JSONArray json = new JSONArray();
-        int id = 1826;
         for (int i = 0; i < arr.size(); i++) {
             JSONObject obj = new JSONObject();
             JSONObject objitem = new JSONObject();
-            objitem.put("id", String.valueOf(id));
+            System.out.println(i + ":  " + arr.get(i).name);
+            objitem.put("id", i);
             objitem.put("name", arr.get(i).name);
+            objitem.put("loves",ThreadLocalRandom.current().nextInt(0,50));
             objitem.put("description", arr.get(i).description);
             objitem.put("ingredients", arr.get(i).ingredients);
             objitem.put("preprocessing", arr.get(i).preprocessing);
@@ -100,33 +104,39 @@ public class SeleniumCrawlData extends Thread {
             objitem.put("tip", arr.get(i).tip);
             objitem.put("levelOfDifficult", arr.get(i).levelOfDifficult);
             objitem.put("imageUrl", arr.get(i).imageUrl);
-            obj.put("Food", objitem);
+            obj.put(String.valueOf(i), objitem);
             json.put(obj);
-            id++;
         }
-
         return json;
     }
-
+    public void tryGetPage(WebDriver driver,String url)
+    {
+        driver.manage().timeouts().pageLoadTimeout(5, TimeUnit.SECONDS);
+        try {
+            driver.get(url);
+        } catch (Exception e) {
+            ((JavascriptExecutor) driver).executeScript("return window.stop");
+        }
+    }
     @Override
     public void run() {
         try {
             System.out.println("Thread: " + Thread.currentThread().getId());
             ArrayList<FoodObject> arrList = new ArrayList<FoodObject>();
             ChromeOptions op = new ChromeOptions();
-            op.addArguments("--headless");
+            //op.addArguments("--headless");
             WebDriver driver = new ChromeDriver(op);
             boolean hasNextPage = true;
             //int test = 1; //this varible for testing.
+            int filename = startPages;
             do {
                 try {
                     System.out.println("Go to page: " + startPages + "......");
-                    driver.get(String.format("https://monngonmoingay.com/tim-kiem-mon-ngon/page/%d/", startPages));
-                    Thread.sleep(2000);
+                    tryGetPage(driver, String.format("https://monngonmoingay.com/tim-kiem-mon-ngon/page/%d/", startPages));
+                    Thread.sleep(500);
                     ((JavascriptExecutor) driver).executeScript("window.scrollTo(0, document.body.scrollHeight)");
-                    Thread.sleep(4000);
                     ArrayList<WebElement> listElement = (ArrayList<WebElement>) driver.findElements(By.className("col-sm-3"));
-                    Thread.sleep(2000);
+                    Thread.sleep(500);
                     for (WebElement webElement : listElement) {
                         FoodObject foodObject = new FoodObject();
                         String src = webElement.findElement(By.tagName("img")).getAttribute("src");
@@ -138,17 +148,15 @@ public class SeleniumCrawlData extends Thread {
                         ((JavascriptExecutor) driver).executeScript("window.open()");
                         ArrayList<String> tabs = new ArrayList<>(driver.getWindowHandles());
                         driver.switchTo().window(tabs.get(1));
-                        driver.get(url);
-                        Thread.sleep(2000);
+                        tryGetPage(driver, url);
+                        Thread.sleep(200);
                         ((JavascriptExecutor) driver).executeScript("window.scrollTo(0, document.body.scrollHeight)");
-                        Thread.sleep(4000);
                         //something to do
-
                         foodObject.imageUrl = ("images/" + getname(src));
-                        foodObject.description = driver.findElement(By.cssSelector("[class='pt-2 pb-4']")).getAttribute("innerText");
+                        foodObject.description = driver.findElement(By.cssSelector("[class='pt-2 pb-4']")).getText();
                         ArrayList<WebElement> rows = (ArrayList<WebElement>) driver.findElements(By.cssSelector("[class='row mb-3']"));
                         ArrayList<WebElement> temp = (ArrayList<WebElement>) driver.findElements(By.cssSelector("[class='nav justify-content-center']"));
-                        String diff = temp.get(0).getAttribute("innerText");
+                        String diff = temp.get(0).getText();
                         foodObject.levelOfDifficult = diff.substring(0, diff.indexOf("\n"));
                         foodObject.ingredients = getContent(rows, 0);
                         foodObject.preprocessing = getContent(rows, 1);
@@ -156,12 +164,9 @@ public class SeleniumCrawlData extends Thread {
                         foodObject.eating = getContent(rows, 3);
                         foodObject.tip = getContent(rows, 4);
                         arrList.add(foodObject);
+                        System.out.println(foodObject.imageUrl);
                         System.out.println("Getting success: " + foodObject.name);
-                        Thread.sleep(2000);
-
                         ((JavascriptExecutor) driver).executeScript("window.close()");
-
-                        Thread.sleep(2000);
                         driver.switchTo().window(tabs.get(0));
                     }
                     startPages++;
@@ -174,7 +179,7 @@ public class SeleniumCrawlData extends Thread {
             } while (hasNextPage && startPages <= endPages);
             //while (hasNextPage && test <1); //this while for testing
             JSONArray Jsonarr = convertToJson(arrList);
-            try (FileWriter file = new FileWriter("output/" + startPages + "data.json")) {
+            try (FileWriter file = new FileWriter("output/" + filename + "data.json")) {
                 System.out.println("Saving JSON file.......");
                 file.write(Jsonarr.toString());
                 System.out.println("Saving file successfull !");

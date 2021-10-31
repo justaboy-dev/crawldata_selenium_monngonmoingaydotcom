@@ -10,6 +10,7 @@
  */
 public class FoodObject {
     public String name;
+    public String id;
     public String description;
     public String ingredients;
     public String preprocessing;
@@ -25,7 +26,7 @@ public class FoodObject {
     }
     public FoodObject(String name, String description,
             String ingredients, String preprocessing,
-            String perform, String eating, String tip, String levelOfDifficult, String imageUrl)
+            String perform, String eating, String tip, String levelOfDifficult, String imageUrl,String id)
     {
         this.name = name;
         this.description = description;
@@ -36,5 +37,6 @@ public class FoodObject {
         this.tip = tip;
         this.levelOfDifficult = levelOfDifficult;
         this.imageUrl = imageUrl;
+        this.id = id;
     }
 }
